@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>SubMail.app</title>
+<style type="text/css">
+<!--
+.btns {
+	color: #000000;
+}
+.capt {
+	font-size: 20px;
+	background-image:url(grad1.jpg);
+	background-repeat:no-repeat;
+}
+.ctrls {
+	color: #FFFFFF;
+	background-color: #292929;
+	border: 1px solid;
+}
+body,td,th {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	color: #FFFFFF;
+}
+body {
+	background-color: #000000;
+	background-image:url(bg.jpg);
+	background-repeat:no-repeat;
+}
+-->
+</style>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1251"></head>
+<body>
+<table width="600" border="0" align="center">
+  <tr>
+    <td align="left" valign="middle"><img src="ss.png" width="185" height="40"></td>
+    <td align="center" valign="middle"><h2>SubMail.app</h2></td>
+    <td align="right" valign="middle"><img src="zn.png" width="100" height="40"></td>
+  </tr>
+</table>
+<table style="background-color: #292929" width="600" align="center" border="1" cellpadding="3" cellspacing="0" bordercolor="#999999">
+  <tr>
+    <td>
+	<table width="100%" border="0">
+  <tr>
+    <td align="left" valign="middle" id="Addr">Loading...</td>
+    <td align="right" valign="middle"><input type = "button" value = "Connect" class="btns" id="ConnectWBtn" disabled /></td>
+  </tr>
+</table>
+</td>
+  </tr>
+  <tr><td class="capt">
+
+	<table width="100%" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+    <td align="left">Inbox <input type = "button" value = "Reload" class="btns" id="ReadBtn" disabled /></td>
+    <td align="right"><a target="_blank" id="TGhref"><img src="tg.png" width="22" height="22" title="Telegram Notifier"></a> </td>
+  </tr>
+</table>
+  
+  </td></tr>
+  <tr><td><div style="display: flex">
+	<textarea rows="10" cols="60" style="flex: 1" class="ctrls" id="InboxEdit" readonly></textarea>
+  </div></td></tr>
+  <tr><td class="capt">Compose</td></tr>
+  <tr>
+    <td><div style="display: flex">To (wallet address): <input type = "text" style="flex: 1" class="ctrls" id="ToAddrEdit"/></div>
+	Message:<br><div style="display: flex"><textarea rows="5" cols="60" style="flex: 1" class="ctrls" id="MsgEdit"></textarea></div><br>
+	<div align="right"><input type = "button" value = "Attach File" class="btns" id="AttachBtn" disabled /> <input type = "button" value = "Send" class="btns" id="SendBtn" disabled /></div>
+	</td>
+  </tr>
+  <tr><td class="capt">Sent</td></tr>
+  <tr><td style="font-size: 12px" id="SentTD"></td></tr>
+</table>
+<p align="center">Use <a href="https://subspacefaucet.com/" target="_blank">Subspace faucet</a> to get test tokens</p>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.2.0/ethers.umd.min.js" type="application/javascript"></script>
+<script>
+const ElAddr = document.getElementById("Addr");
+const ElConnectWBtn = document.getElementById("ConnectWBtn");
+const ElReadBtn = document.getElementById("ReadBtn");
+const ElInboxEdit = document.getElementById("InboxEdit");
+const ElToAddrEdit = document.getElementById("ToAddrEdit");
+const ElMsgEdit = document.getElementById("MsgEdit");
+const ElSendBtn = document.getElementById("SendBtn");
+const ElSentTD = document.getElementById("SentTD");
+const ElTGhref = document.getElementById("TGhref");
+
+const CONTRACT_ADDRESS = "0x286a9C541f39A82bE1A4f150056bbb570A85d77D";
+const contractABI = [
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "sender",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "recipient",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "timestamp",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "message",
+				"type": "string"
+			}
+		],
+		"name": "MessageSent",
+		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "to_key",
+				"type": "address"
+			},
+			{
+				"internalType": "string",
+				"name": "_msg",
+				"type": "string"
+			}
+		],
+		"name": "sendMessage",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "readMessages",
+		"outputs": [
+			{
+				"components": [
+					{
+						"internalType": "address",
+						"name": "sender",
+						"type": "address"
+					},
+					{
+						"internalType": "uint256",
+						"name": "timestamp",
+						"type": "uint256"
+					},
+					{
+						"internalType": "string",
+						"name": "msg",
+						"type": "string"
+					}
+				],
+				"internalType": "struct SubMail.message[]",
+				"name": "",
+				"type": "tuple[]"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	}
+];
+
+var provider;
+var signer;
+var address;
+var contract;
+
+if (window.ethereum) {
+	ElConnectWBtn.disabled = false;
+	ElAddr.textContent = "Address: not connected";
+} else {
+	ElAddr.textContent = "Install EVM wallet (e.g. MetaMask)";
+}
+
+async function EnableSW() {
+	try {
+		await window.ethereum.request({
+			method: "wallet_switchEthereumChain",
+			params: [{ chainId: "0x77A10" }],
+		});
+	} catch (switchError) {
+		// This error code indicates that the chain has not been added to MetaMask.
+		if (switchError.code === 4902) {
+            await window.ethereum.request({
+                method: "wallet_addEthereumChain",
+                params: [
+                    {
+                        chainId: "0x77A10",
+                        chainName: "Autonomys Taurus Testnet",
+                        rpcUrls: ["https://auto-evm-0.taurus.subspace.network/ws"],
+				        nativeCurrency: {
+							"symbol": "AI3",
+							"decimals": 18
+						}
+                    }
+                ]
+            });
+		} else {
+		// handle other "switch" errors
+			throw switchError;
+		}
+	}
+	
+	try {
+		provider = new ethers.providers.Web3Provider(window.ethereum);
+		await provider.send("eth_requestAccounts", []);
+		signer = provider.getSigner();
+		address = await signer.getAddress();
+		ElAddr.textContent = "Address: " + address;
+		ElTGhref.setAttribute('href', 'https://t.me/SubMailBot?start=' + address);
+		contract = new ethers.Contract(CONTRACT_ADDRESS, contractABI, signer);
+		ElConnectWBtn.disabled = true;
+		ElSendBtn.disabled = false;
+		ElReadBtn.disabled = false;
+		ReadMsgs();
+	} catch (err) {
+		alert(err);
+	}
+}
+
+async function ReadMsgs() {
+	try {
+		const data = await contract.readMessages();
+		let msgs = "";
+		data.forEach( ( item ) => {
+            const timestamp = new Date( 1000*item[1].toNumber() ).toLocaleString();
+    		msgs = msgs + timestamp + " From: " + item[0] + "\n" + item[2]+"\n\n";
+        });
+		ElInboxEdit.value = msgs;
+	} catch (err) {
+		alert(err);
+	}
+}
+
+async function SendTr() {
+	try {
+        let tx = await contract.sendMessage( ElToAddrEdit.value, ElMsgEdit.value );
+		ElSentTD.innerHTML = ElSentTD.innerHTML + new Date().toUTCString() + 
+		' To: <a href="https://nova.gemini-3h.subspace.network/address/'+ElToAddrEdit.value+'" target="_blank">'+ElToAddrEdit.value.slice(0,4)+'...'+ElToAddrEdit.value.slice(-6)+'</a> ' +
+		'TH: <a href="https://nova.gemini-3h.subspace.network/tx/'+tx.hash+'" target="_blank">'+tx.hash.slice(0,4)+'...'+tx.hash.slice(-6)+'</a><br>' +
+		ElMsgEdit.value.slice(0,20) + '...<br><br>';
+		ElToAddrEdit.value = "";
+		ElMsgEdit.value = "";
+	} catch (err) {
+		alert(err);
+	}
+}
+
+ElConnectWBtn.onclick = function() {
+	EnableSW();
+};
+
+ElSendBtn.onclick = function() {
+	SendTr();
+};
+
+ElReadBtn.onclick = function() {
+	ReadMsgs();
+};
+</script>
+</body>
+</html>
