@@ -1,16 +1,24 @@
-## Autonomys Network SubMail Messenger
+## SubMail Messenger
 
-Welcome to the SubMail Messenger project! This is a blockchain messenger dApp that allows sending text messages with attachments to any Autonomys EVM wallet address.
+Welcome to the Autonomys Network SubMail Messenger project! This is a blockchain messenger dApp that allows sending text messages with attachments to any Autonomys EVM wallet address.
+
+### Features
+
+- **User-Friendly Interface**: one-page web application with a handy user interface
+- **Message notifications**: instant notifications via IMs (Telegram, Discord) and email
+- **Auto Drive archiving**: you can archive all your messages to the permanent Autonomys Auto Drive storage
+- **Large attachments support**: sending large attachments encrypted via Auto Drive storage
+
+### Deployed application link
+
+You can check the live dApp demo here: https://submail.app/
+
+---
 
 ### Prerequisites
 - Node.js: Version 14 or higher is recommended.
 - npm: Node Package Manager, comes with Node.js.
-
-### Features
-
-- **User-Friendly Interface**: Some text.
-
----
+- MongoDB (local or cloud database like MongoDB Atlas).
 
 ## Getting Started
 
@@ -43,12 +51,23 @@ Welcome to the SubMail Messenger project! This is a blockchain messenger dApp th
 5. **Install Required Packages**:
 
    ```bash
-   npm install express @autonomys/auto-utils
+   npm install
+   ```
+
+### Server Configuration
+
+6. **Set the Server Parameters**:
+
+   Copy `.env_sample` to `.env` and edit it to specify the actual server parameters:
+   
+   ```bash
+   cp .env_sample .env
+   nano .env
    ```
 
 ### Starting the Server
 
-7. **Run the Express Server**:
+7. **Run the SubMail Server**:
 
    ```bash
    npm start
@@ -81,15 +100,18 @@ Welcome to the SubMail Messenger project! This is a blockchain messenger dApp th
 Your project directory should look like this:
 
 ```
-submail/
+SubMail/
 ├── index.js
 ├── package.json
+└── contract/
+    └── SubMail.sol
 └── public/
     └── index.html
 ```
 
-- **`index.js`**: The Express server file.
+- **`index.js`**: The SubMail server file.
 - **`package.json`**: Contains project metadata and dependencies.
+- **`contract/SubMail.sol`**: The dApp smart contract source.
 - **`public/index.html`**: The main HTML file for the front-end.
 
---
+---
