@@ -29,29 +29,21 @@ Welcome to the SubMail Messenger project! This is a blockchain messenger dApp th
    Open your terminal or command prompt and run the following command, replacing `<your-username>` with your GitHub username:
 
    ```bash
-   git clone https://github.com/<your-username>/autonomys-.git
+   git clone https://github.com/<your-username>/SubMail.git
    ```
 
 3. **Navigate to the Project Directory**:
 
    ```bash
-   cd autonomys-space-race-plotometer
+   cd SubMail
    ```
 
 ### Installing Dependencies
 
-4. **Initialize npm**:
-
-   If a `package.json` file isn't already present, initialize npm:
-
-   ```bash
-   npm init -y
-   ```
-
 5. **Install Required Packages**:
 
    ```bash
-   npm install express @autonomys/auto-consensus @autonomys/auto-utils
+   npm install express @autonomys/auto-utils
    ```
 
 ### Starting the Server
@@ -80,7 +72,7 @@ Welcome to the SubMail Messenger project! This is a blockchain messenger dApp th
    http://localhost:3000/
    ```
 
-   You should see the **SubMail** displaying .
+   You should see the **SubMail** dApp web page.
 
 ---
 
